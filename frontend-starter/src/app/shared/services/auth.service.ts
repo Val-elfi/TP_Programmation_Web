@@ -12,6 +12,21 @@ export class AuthService {
   readonly currentUser = signal<User | null>(null);
   readonly token = signal<string | null>(localStorage.getItem('gpc_token'));
 
+  constructor() {
+    // Si un jeton est déjà stocké dans le navigateur, on initialise le profil de l'utilisateur
+    if (this.token()) {
+      this.profile().subscribe({
+        next: (user) => console.debug('[AuthService] Profil restauré au démarrage pour', user.id),
+        error: (error) => {
+          console.warn('[AuthService] Session expirée ou invalide au démarrage', error.status);
+          if (error.status === 401) {
+            this.logout();
+          }
+        },
+      });
+    }
+  }
+
   login(email: string, password: string) {
     return this.http
       .post<AuthResponse>('/api/auth/login', { email, password })
@@ -37,14 +52,17 @@ export class AuthService {
   }
 
   logout(): void {
+    console.debug('[AuthService] Déconnexion et nettoyage de l’état local');
     localStorage.removeItem('gpc_token');
     this.token.set(null);
     this.currentUser.set(null);
   }
 
   private storeAuthentication(response: AuthResponse): void {
+    // Sauvegarde du JWT sans jamais journaliser sa valeur
     localStorage.setItem('gpc_token', response.token);
     this.token.set(response.token);
     this.currentUser.set(response.user);
+    console.debug('[AuthService] Authentification enregistrée pour', response.user.id);
   }
 }

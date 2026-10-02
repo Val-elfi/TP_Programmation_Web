@@ -57,8 +57,8 @@ function auth(req, res, next) {
   const raw = req.headers.authorization;
 
   // Le token est transmis dans l'en-tête Authorization sous la forme
-    // "Authorization: Bearer <token>". Le préfixe "Bearer " est obligatoire pour que
-    // le middleware sache qu'il s'agit d'un JWT et non d'un autre type de jeton.
+  // "Authorization: Bearer <token>". Le préfixe "Bearer " est obligatoire pour que
+  // le middleware sache qu'il s'agit d'un JWT et non d'un autre type de jeton.
   if (!raw?.startsWith("Bearer ")) {
     console.warn(`[auth] Authorization absente pour ${req.method} ${req.path}`);
     return res.status(401).json({ message: "Authentification requise" });
@@ -194,8 +194,8 @@ export function createApp() {
    * requête par un HTTP POST. */
   app.post("/api/auth/login", async (req, res, next) => {
     try {
-        // req.body est déjà un objet JavaScript grâce au middleware express.json() placé plus haut.
-        // il contient les champs email et password envoyés par le frontend Angular.
+      // req.body est déjà un objet JavaScript grâce au middleware express.json() placé plus haut.
+      // il contient les champs email et password envoyés par le frontend Angular.
       const email = String(req.body?.email || "").toLowerCase();
       console.log(`[auth] Tentative de connexion pour ${email || "email absent"}`);
 
@@ -228,9 +228,9 @@ export function createApp() {
   */
   app.get("/api/users/me", auth, async (req, res, next) => {
     try {
-        // req.auth.sub contient l'identifiant MongoDB de l'utilisateur 
-        // extrait du JWT par le middleware auth. ici req.auth est un objet ajouté par le middleware 
-        // auth à la requête, et sub est la propriété qui contient l'identifiant de l'utilisateur.
+      // req.auth.sub contient l'identifiant MongoDB de l'utilisateur 
+      // extrait du JWT par le middleware auth. ici req.auth est un objet ajouté par le middleware 
+      // auth à la requête, et sub est la propriété qui contient l'identifiant de l'utilisateur.
       const user = await User.findById(req.auth.sub);
       if (!user) {
         console.warn(`[user] Profil introuvable : ${req.auth.sub}`);
@@ -248,10 +248,20 @@ export function createApp() {
   /** Modifie uniquement le nom de l'utilisateur connecté. */
   app.put("/api/users/me", auth, async (req, res, next) => {
     try {
+      const rawName = req.body?.name;
+      const name = typeof rawName === "string" ? rawName.trim() : "";
+
+      if (!name || name.length < 2) {
+        console.warn(`[user] Nom invalide pour ${req.auth.sub}: "${rawName}"`);
+        return res.status(400).json({
+          message: "Le nom est requis et doit contenir au moins 2 caractères",
+        });
+      }
+
       const user = await User.findByIdAndUpdate(
         req.auth.sub,
-        { $set: { name: req.body?.name } },
-        { new: true, runValidators: true },
+        { $set: { name } },
+        { returnDocument: "after", runValidators: true },
       );
 
       if (!user) {
@@ -281,7 +291,7 @@ export function createApp() {
       // Track.find() récupère les pistes de l'utilisateur avec pagination, 
       // tandis que Track.countDocuments() compte le nombre total de pistes pour cet utilisateur.
       // Promise.all attend que les deux opérations soient terminées avant de continuer et les résultats
-        // sont stockés dans les variables items et total.
+      // sont stockés dans les variables items et total.
       const [items, total] = await Promise.all([
         Track.find(filter)
           .sort({ createdAt: -1 })

@@ -1,12 +1,62 @@
 <section class="card">
   <h1>Connexion</h1>
-  <form [formGroup]="form" (ngSubmit)="submit()">
-    <label>Email<input type="email" formControlName="email" /></label>
-    <label>Mot de passe<input type="password" formControlName="password" /></label>
-    <button type="submit">Se connecter</button>
+  
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <label for="login-email">
+      <span>Adresse email</span>
+      <input
+        id="login-email"
+        type="email"
+        formControlName="email"
+        placeholder="exemple@domaine.fr"
+        autocomplete="email"
+        [class.input-invalid]="email.invalid && email.touched"
+      />
+    </label>
+    @if (email.invalid && email.touched) {
+      @if (email.hasError('required')) {
+        <small class="field-error">L'adresse email est requise.</small>
+      } @else if (email.hasError('email')) {
+        <small class="field-error">Veuillez saisir une adresse email valide.</small>
+      }
+    }
+
+    <label for="login-password">
+      <span>Mot de passe</span>
+      <input
+        id="login-password"
+        type="password"
+        formControlName="password"
+        placeholder="8 caractères minimum"
+        autocomplete="current-password"
+        [class.input-invalid]="password.invalid && password.touched"
+      />
+    </label>
+    @if (password.invalid && password.touched) {
+      @if (password.hasError('required')) {
+        <small class="field-error">Le mot de passe est requis.</small>
+      } @else if (password.hasError('minlength')) {
+        <small class="field-error">Le mot de passe doit comporter au moins 8 caractères.</small>
+      }
+    }
+
+    <button type="submit" [disabled]="loading()">
+      @if (loading()) {
+        Connexion en cours...
+      } @else {
+        Se connecter
+      }
+    </button>
   </form>
-  @if (error()) {
-    <p class="error">{{ error() }}</p>
+
+  @if (errorMessage()) {
+    <div class="alert-error" role="alert">
+      {{ errorMessage() }}
+    </div>
   }
-  <p><a routerLink="/register">Créer un compte</a></p>
+
+  <p class="switch-auth">
+    Pas encore de compte ? <a routerLink="/register">Créer un compte</a>
+  </p>
 </section>
+
