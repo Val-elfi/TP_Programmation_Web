@@ -1,1 +1,126 @@
-:host { display: block; }
+:host {
+  display: block;
+}
+
+/* --- Indicateur de chargement --- */
+.loading-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.5rem 0;
+  color: #61756f;
+  font-style: italic;
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 3px solid #b8cbc5;
+  border-top-color: #1d755e;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* --- État vide --- */
+.empty-state {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: #61756f;
+}
+
+.empty-state p:first-child {
+  font-size: 1.2rem;
+}
+
+/* --- Informations de la piste --- */
+.track-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.track-info b {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.track-info small {
+  display: block;
+  color: #61756f;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* --- Bouton de lecture --- */
+.btn-play {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 1rem;
+  background: #1d755e;
+  color: white;
+  border: 0;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.btn-play:hover {
+  background: #276c57;
+  transform: scale(1.1);
+}
+
+/* --- Pager --- */
+.pager {
+  margin: 1rem 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.page-info {
+  font-size: 0.9rem;
+  color: #61756f;
+  font-weight: 500;
+}
+
+.pager button {
+  min-width: 110px;
+}
+
+/* --- Lecteur audio --- */
+.audio-player {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e1ebe7;
+}
+
+/* --- Alertes --- */
+.alert-success {
+  margin: 0.75rem 0 0;
+  padding: 0.75rem 1rem;
+  background: #e8f5e9;
+  color: #2e7d32;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.alert-error {
+  margin: 0.75rem 0 0;
+  padding: 0.75rem 1rem;
+  background: #fdecea;
+  color: #b71c1c;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}

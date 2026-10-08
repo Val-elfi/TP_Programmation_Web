@@ -399,9 +399,15 @@ export function createApp() {
       }
 
       const audioPath = path.join(UPLOADS, track.storedName);
+      if (!fs.existsSync(audioPath)) {
+        console.warn(`[tracks] Fichier physique introuvable sur le disque : ${audioPath}`);
+        return res.status(404).json({ message: "Fichier audio introuvable sur le disque" });
+      }
+
       res.type(track.mimeType);
       // Ce callback permet de loguer le succès ou l'erreur du transfert.
-      res.sendFile(audioPath, (error) => {
+      // L'option dotfiles: 'allow' est indispensable car les chemins de projet peuvent contenir des points.
+      res.sendFile(audioPath, { dotfiles: "allow" }, (error) => {
         if (error) {
           console.error(`[tracks] Erreur d'envoi audio ${track.id}`, error);
           if (!res.headersSent) next(error);
