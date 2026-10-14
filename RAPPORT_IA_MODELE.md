@@ -188,3 +188,176 @@ Pour capturer les 3 preuves requises pour le livrable du TP2 :
      - *Response Headers* : `Content-Type: audio/mpeg` (ou `audio/wav`).
    - Vérifier que le lecteur audio dans l'interface s'affiche avec la piste en cours et démarre la lecture.
 
+---
+
+# TP3 — Fiabilisation et Enrichissement du Frontend
+
+## Mission 5 — Suppression sécurisée d'une piste
+
+### 1. Objectif
+Permettre à l'utilisateur de supprimer définitivement une piste depuis sa carte avec confirmation utilisateur, protection anti-double-clic, notification SnackBar de succès/erreur, rafraîchissement dynamique de la liste (avec recul de page automatique si la page se vide), et révocation immédiate du lecteur audio si le morceau supprimé était en cours d'écoute.
+
+### 2. Prompt utilisé
+```text
+Prompt 1 — Suppression sécurisée d'une piste (Mission 5)
+Contexte : Projet Angular avec Signals et cartes de bibliothèque audio. Backend fournit DELETE /api/tracks/:id protégé par JWT.
+Objectif : Permettre à l'utilisateur de supprimer une piste depuis sa carte avec confirmation, état de suppression et retour visuel.
+Consignes :
+1. Service TrackService : ajouter delete(id: string) appelant HttpClient.delete<void>(/api/tracks/${id}).
+2. Composant TracksPageComponent : signal deletingId anti-double clic, confirmation préalable (window.confirm), notification SnackBar (auto-dismiss), rafraîchissement de liste et arrêt de lecture si piste active. Gestion des erreurs 404 et 403.
+3. Template : bouton « 🗑️ Supprimer » avec désactivation et spinner/texte pendant la suppression.
+```
+
+### 3. Plan proposé et vérifications
+- **Service** : Ajout de la méthode `delete(id: string)` dans `TrackService`.
+- **Composant** : Ajout des signaux `deletingId = signal<string | null>(null)` et `snackbar = signal<{ message: string; type: 'success' | 'error' } | null>(null)`.
+- **Sécurité et robustesse** :
+  - Confirmation obligatoire pour prévenir les suppressions accidentelles.
+  - Révocation de l'URL Blob et réinitialisation de `currentTrack` si le morceau supprimé était en cours de lecture.
+  - Décrémentation de la page si l'utilisateur supprime la dernière piste de la page courante.
+
+### 4. Fichiers modifiés
+- `frontend-starter/src/app/shared/services/track.service.ts`
+- `frontend-starter/src/app/components/tracks-page/tracks-page.ts`
+- `frontend-starter/src/app/components/tracks-page/tracks-page.html`
+- `frontend-starter/src/app/components/tracks-page/tracks-page.css`
+
+---
+
+## Mission 6 — Suivi de progression de l'upload audio
+
+### 1. Objectif
+Faire évoluer l'upload unitaire en une opération asynchrone observable avec suivi de progression en temps réel, calcul du pourcentage d'avancement, affichage d'une barre de progression interactive et verrouillage complet des contrôles du formulaire pour interdire les doubles soumissions.
+
+### 2. Prompt utilisé
+```text
+Prompt 2 — Suivi de progression de l'upload audio (Mission 6)
+Contexte : Composant d'upload audio Angular. Évolution pour afficher le pourcentage d'envoi.
+Objectif : Écouter les événements de progression HTTP d'Angular et afficher une barre de progression en temps réel.
+Consignes :
+1. TrackService.upload() : configurer { reportProgress: true, observe: 'events' } et renvoyer Observable<HttpEvent<Track>>.
+2. Signaux : uploadProgress = signal<number>(0), calcul du % sur HttpEventType.UploadProgress, traitement du succès sur HttpEventType.Response.
+3. Template : <progress [value]="uploadProgress()" max="100"> avec libellé en direct et verrouillage des inputs.
+```
+
+### 3. Plan proposé et vérifications
+- **Service** : Modification de `upload()` pour transmettre les options `reportProgress: true` et `observe: 'events'` à `HttpClient.post`.
+- **Composant** : Signal `uploadProgress`, écoute des événements `HttpEventType.UploadProgress` (`(100 * loaded) / total`) et `HttpEventType.Response` (succès à 100%, réinitialisation du formulaire et rechargement de la bibliothèque).
+- **Template & CSS** : Intégration d'une barre de progression animée avec gradient de couleur et désactivation de tous les champs de saisie (`[disabled]="uploading()"`).
+
+### 4. Fichiers modifiés
+- `frontend-starter/src/app/shared/services/track.service.ts`
+- `frontend-starter/src/app/components/tracks-page/tracks-page.ts`
+- `frontend-starter/src/app/components/tracks-page/tracks-page.html`
+- `frontend-starter/src/app/components/tracks-page/tracks-page.css`
+
+---
+
+## Mission 7 — Tests automatisés Angular (Vitest & HttpTestingController)
+
+### 1. Objectif
+Mettre en place une suite de tests unitaires et d'intégration HTTP automatisés dans `frontend-starter`, totalement indépendants du backend Express et de la base MongoDB, vérifiant les contrats d'API, les paramètres de requêtes, les méthodes HTTP et l'injection des headers d'autorisation.
+
+### 2. Prompt utilisé
+```text
+Prompt 3 — Tests automatisés Angular avec HttpTestingController (Mission 7)
+Contexte : Suite de tests frontend-starter avec Vitest. Écrire au moins 3 tests isolés sans dépendre du backend ni de MongoDB.
+Consignes :
+1. track.service.spec.ts : Test 1 (list avec page & limit) et Test 2 (delete).
+2. auth.interceptor.spec.ts : Test 3 (injection du Bearer token).
+3. auth.service.spec.ts : Test bonus (login avec POST et sauvegarde du token).
+4. Exécution et vérification avec npm test.
+```
+
+### 3. Fichiers de tests créés
+1. `src/app/shared/services/track.service.spec.ts` :
+   - Test 1 : `TrackService.list(2, 4)` transmet bien les query params `page=2` et `limit=4` sur `GET /api/tracks`.
+   - Test 2 : `TrackService.delete(trackId)` exécute bien une requête `DELETE /api/tracks/:id`.
+2. `src/app/shared/interceptors/auth.interceptor.spec.ts` :
+   - Test 3 : `authInterceptor` ajoute bien le header `Authorization: Bearer <token>` si un jeton est présent.
+   - Test 4 : `authInterceptor` ne transmet aucun header `Authorization` en l'absence de session.
+3. `src/app/shared/services/auth.service.spec.ts` :
+   - Test 5 : `AuthService.login()` envoie `POST /api/auth/login` avec le corps JSON attendu et persiste le token.
+
+### 4. Preuve d'exécution des tests (`npm test`)
+```text
+> gpc-angular-starter@1.0.0 test
+> ng test --watch=false
+
+ RUN  v4.1.11 C:/.../frontend-starter
+
+ ✓  gpc  src/app/shared/services/track.service.spec.ts (2 tests)
+ ✓  gpc  src/app/shared/services/auth.service.spec.ts (1 test)
+ ✓  gpc  src/app/shared/interceptors/auth.interceptor.spec.ts (2 tests)
+
+ Test Files  3 passed (3)
+      Tests  5 passed (5)
+   Duration  52s
+```
+
+---
+
+## Réponses aux questions théoriques du TP3 (Restitution orale)
+
+### 1. Pourquoi la suppression passe-t-elle par un service et pourquoi le guard/l'interface ne suffisent pas à la sécuriser ?
+- **Séparation des responsabilités (Service)** : Le composant gère uniquement l'affichage et l'interaction utilisateur. Tout appel HTTP passe obligatoirement par `TrackService` pour garantir la maintenabilité, la réutilisabilité et la possibilité de tester le composant avec des mocks sans dépendre d'un réseau réel.
+- **Illusion de sécurité côté client** : Les guards de route Angular (`canActivate`) et les interfaces graphiques n'offrent qu'une protection ergonomique (masquer un bouton ou rediriger un visiteur anonyme). Tout utilisateur peut ouvrir la console du navigateur ou utiliser un client HTTP externe (curl, Postman) pour émettre directement un `DELETE /api/tracks/:id`. Seul le **backend** vérifie la validité cryptographique du JWT et contrôle en base de données que `track.ownerId === req.auth.sub`.
+
+### 2. Comment le backend protège-t-il réellement la suppression ?
+Dans `backend/src/app.js` (handler `app.delete("/api/tracks/:id", auth, ...)`), la protection repose sur deux verrous incontournables :
+1. **Le middleware `auth`** : Valide la signature HMAC du JWT avec le secret serveur et extrait l'identifiant de l'utilisateur authentifié (`req.auth.sub`).
+2. **La requête atomique Mongoose** :
+   ```javascript
+   const track = await Track.findOneAndDelete({
+     _id: req.params.id,
+     ownerId: req.auth.sub, // DOUBLE CONDITION OBLIGATOIRE
+   });
+   ```
+   Si l'identifiant de la piste existe mais appartient à un autre utilisateur, la requête ne retourne aucun document (`track === null`). Le serveur renvoie un code `404 Not Found` (ou 403), protégeant les données sans même révéler l'existence de la piste d'autrui. Le fichier physique n'est supprimé du disque (`fs.unlinkSync`) que si cette vérification a réussi.
+
+### 3. Comment Angular calcule-t-il le pourcentage d’upload avec `reportProgress` ?
+Lorsque l'option `{ reportProgress: true, observe: 'events' }` est configurée sur `HttpClient.post()`, Angular écoute directement les événements d'envoi de la couche sous-jacente (`XMLHttpRequest.upload.onprogress` ou les flux Fetch).
+- À chaque paquet d'octets transféré vers le serveur, le navigateur déclenche un événement contenant `event.loaded` (octets déjà envoyés) et `event.total` (taille totale calculée à partir du `Content-Length` du multipart).
+- Angular encapsulate ces notifications sous forme d'objets `HttpEvent` avec `event.type === HttpEventType.UploadProgress`.
+- La formule mathématique dans le composant est :
+  $$\text{uploadProgress} = \text{Math.round}\left(\frac{100 \times \text{event.loaded}}{\text{event.total}}\right)$$
+
+### 4. Pourquoi les tests HTTP avec `HttpTestingController` n’ont-ils pas besoin de backend ni de MongoDB ?
+`HttpTestingController` est un mécanisme de **bouchonnage (mocking)** fourni par `@angular/common/http/testing`.
+- Il remplace le backend réseau réel par un intercepteur en mémoire qui capture instantanément toutes les requêtes sortantes émises par `HttpClient`.
+- Il permet au développeur d'inspecter l'URL, les paramètres (`page`, `limit`), les headers et la méthode HTTP (`DELETE`, `GET`), puis de simuler une réponse arbitraire avec `req.flush(données)`.
+- Cela rend les tests **ultra-rapides, déterministes, reproductibles sur des serveurs d'intégration continue (CI)** et totalement indépendants de l'état d'une base de données ou de la disponibilité d'un serveur distant.
+
+### 5. Que vérifie un test d’intercepteur ou de guard ?
+- **Test d'intercepteur** : Vérifie que le pipeline HTTP modifie correctement les requêtes sortantes (ex: ajout automatique du header `Authorization: Bearer <token>` lorsque l'utilisateur est connecté, et absence de header si déconnecté) et gère correctement les codes d'erreur entrants (ex: interception d'une 401 pour déclencher `auth.logout()` et la redirection vers `/login`).
+- **Test de guard** : Vérifie la logique de protection des routes de navigation (`canActivate`). Si l'utilisateur possède un token valide, le guard renvoie `true` ; si l'utilisateur n'a pas de token, il renvoie `false` (ou un `UrlTree`) et ordonne la redirection vers `/login`.
+
+### 6. Quelle est la différence entre un test unitaire et un test d’intégration ?
+- **Test unitaire** : Isole la plus petite unité de code possible (une fonction, une méthode de service) en remplaçant toutes ses dépendances externes par des doubles de test (mocks, stubs). Exemple : tester que `formatSize(2048)` renvoie `'2.0 Ko'`.
+- **Test d’intégration** : Vérifie que plusieurs composants ou modules logiciels fonctionnent correctement ensemble lorsqu'ils sont interconnectés. Exemple : vérifier que l'appel d'une méthode de service traverse bien l'intercepteur HTTP, encode les paramètres, puis émet la réponse vers l'abonné dans le bon format.
+
+---
+
+## Protocole pas-à-pas pour les captures Network DevTools (Preuves TP3)
+
+### 1. Preuve 1 : Requête DELETE d'une piste
+1. Ouvrez l'application sur `http://localhost:4200/tracks` avec les DevTools ouverts (**F12**), onglet **Network** (filtre **Fetch/XHR**).
+2. Sur l'une des cartes de votre bibliothèque, cliquez sur le bouton rouge « **🗑️** » (Supprimer).
+3. Une boîte de dialogue de confirmation native s'affiche : confirmez en cliquant sur **OK**.
+4. Dans la liste des requêtes Network, repérez la ligne :
+   - *Name* : `<ID_DE_LA_PISTE>`
+   - *Method* : `DELETE`
+   - *Status* : `204 No Content` (ou `200 OK`).
+5. **Capture à réaliser** :
+   - Onglet **Headers** : URL `http://localhost:4200/api/tracks/<ID>`, `Request Method: DELETE`, et header `Authorization: Bearer <token>`.
+   - L'interface Angular en arrière-plan montrant le message de succès vert SnackBar « Piste supprimée avec succès ».
+
+### 2. Preuve 2 : Requête d'upload avec progression
+1. Dans l'onglet **Network**, activez le bridage réseau (Throttling) en choisissant **Fast 3G** ou **Slow 3G** (pour ralentir l'envoi et observer la barre de progression).
+2. Sélectionnez un fichier audio de 5 à 10 Mo dans le formulaire d'import.
+3. Cliquez sur « **Envoyer** ».
+4. Observez la barre de progression monter en temps réel (`Envoi en cours (45%)…`).
+5. **Capture à réaliser** :
+   - Prendre une capture d'écran pendant que la barre de progression est active (ex. à 50%) avec la requête `POST /api/tracks` en état *Pending* dans l'onglet Network.
+
+

@@ -6,37 +6,107 @@
   </div>
 
   <div class="grid">
-    <!-- Carte d'import -->
-    <article class="card">
+    <!-- Carte d'import (gauche) -->
+    <article class="card import-card">
       <h2>Importer</h2>
-      <label>Titre<input [formControl]="title" placeholder="Titre de la piste" /></label>
-      <label>Fichier audio<input type="file" accept="audio/*" (change)="choose($event)" /></label>
+      
+      <label>
+        Titre
+        <input [formControl]="title" placeholder="Titre de la piste" [disabled]="uploading()" />
+      </label>
+
+      <label>
+        Fichier audio
+        <input #audioFileInput type="file" accept="audio/*" (change)="choose($event)" [disabled]="uploading()" />
+      </label>
+
+      <label>
+        Image de couverture (optionnelle)
+        <input #coverFileInput type="file" accept="image/*" (change)="chooseCover($event)" [disabled]="uploading()" />
+      </label>
+      
       @if (uploadError()) {
         <p class="alert-error">{{ uploadError() }}</p>
       }
-      <button type="button" (click)="upload()" [disabled]="!file || uploading()">
+
+      <!-- Barre de progression en temps réel -->
+      @if (uploading()) {
+        <div class="upload-progress-container">
+          <div class="progress-bar-header">
+            <span>Envoi du fichier…</span>
+            <b>{{ uploadProgress() }}%</b>
+          </div>
+          <progress [value]="uploadProgress()" max="100" class="upload-progress-bar"></progress>
+        </div>
+      }
+
+      <button type="button" class="btn-submit" (click)="upload()" [disabled]="!file || uploading()">
         @if (uploading()) {
-          Envoi en cours…
+          Envoi en cours ({{ uploadProgress() }}%)…
         } @else {
           Envoyer
         }
       </button>
+
       @if (uploadSuccess()) {
         <p class="alert-success">{{ uploadSuccess() }}</p>
       }
     </article>
 
-    <!-- Carte de la bibliothèque paginée -->
-    <article class="card">
-      <div class="row">
+    <!-- Carte de la bibliothèque (droite) -->
+    <article class="card tracks-library-card">
+      <div class="row card-header">
         <h2>Mes pistes</h2>
-        <button type="button" (click)="load()" [disabled]="loading()">Actualiser</button>
+        <button type="button" class="btn-refresh" (click)="load()" [disabled]="loading()">Actualiser</button>
       </div>
+
+      <!-- Message / Bannière d'information (ex: image supprimée) -->
+      @if (snackbar(); as sb) {
+        <div class="banner-notice" [class.banner-error]="sb.type === 'error'" role="alert">
+          <span>{{ sb.message }}</span>
+          <button type="button" class="banner-close" (click)="snackbar.set(null)" aria-label="Fermer la notification">✕</button>
+        </div>
+      }
 
       <!-- Erreur globale de chargement -->
       @if (error()) {
         <p class="alert-error">{{ error() }}</p>
       }
+
+      <!-- Panneau de recherche et de tri -->
+      <div class="filters-panel">
+        <input
+          type="text"
+          class="filter-search-input"
+          placeholder="Rechercher par titre ou nom de fichier..."
+          [value]="searchQuery()"
+          (input)="searchQuery.set($any($event.target).value)"
+        />
+
+        <div class="filter-controls-row">
+          <div class="filter-inline">
+            <label for="sortSelect">Trier par</label>
+            <select id="sortSelect" [value]="sortBy()" (change)="sortBy.set($any($event.target).value)">
+              <option value="date-desc">Date (récentes)</option>
+              <option value="date-asc">Date (anciennes)</option>
+              <option value="title-asc">Titre (A-Z)</option>
+              <option value="title-desc">Titre (Z-A)</option>
+              <option value="size-asc">Taille (croissante)</option>
+              <option value="size-desc">Taille (décroissante)</option>
+            </select>
+          </div>
+
+          <div class="filter-inline">
+            <label for="sizeSelect">Taille</label>
+            <select id="sizeSelect" [value]="sizeFilter()" (change)="sizeFilter.set($any($event.target).value)">
+              <option value="all">Toutes</option>
+              <option value="small">Moins de 1 Mo</option>
+              <option value="medium">1 à 5 Mo</option>
+              <option value="large">Plus de 5 Mo</option>
+            </select>
+          </div>
+        </div>
+      </div>
 
       <!-- État de chargement -->
       @if (loading()) {
@@ -46,57 +116,147 @@
         </div>
       }
 
-      <!-- Liste des pistes sous forme de cartes responsives -->
+      <!-- Liste horizontale des pistes (conformément à la maquette) -->
       @if (!loading()) {
-        <div class="tracks-grid">
-          @for (track of tracks(); track track.id) {
-            <article class="track-card" [class.is-playing]="currentTrack()?.id === track.id">
-              <div class="track-header">
-                <span class="track-badge">{{ track.mimeType }}</span>
-                @if (currentTrack()?.id === track.id) {
-                  <span class="playing-indicator">En écoute 🔊</span>
+        <div class="tracks-list">
+          @for (track of displayedTracks(); track track.id) {
+            <div class="track-row-item" [class.is-playing]="currentTrack()?.id === track.id">
+              <!-- Vignette / Cover -->
+              <div class="track-cover-container">
+                @if (getCover(track.id); as coverUrl) {
+                  <img [src]="coverUrl" [alt]="track.title" class="track-thumb-img" />
+                } @else {
+                  <div class="track-default-cover">
+                    <svg class="vinyl-icon" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <rect width="48" height="48" rx="8" fill="#133d32"/>
+                      <circle cx="24" cy="24" r="18" fill="#0e2e26" stroke="#1d5c4c" stroke-width="1.5"/>
+                      <circle cx="24" cy="24" r="13" stroke="#256b59" stroke-width="1" opacity="0.6"/>
+                      <circle cx="24" cy="24" r="8" stroke="#256b59" stroke-width="1" opacity="0.6"/>
+                      <circle cx="24" cy="24" r="3.5" fill="#4ea58b"/>
+                      <circle cx="24" cy="24" r="1.5" fill="#ffffff"/>
+                    </svg>
+                  </div>
                 }
               </div>
 
-              <h3 class="track-title" [title]="track.title">{{ track.title }}</h3>
-
-              <p class="track-original-name" [title]="track.originalName">
-                📄 {{ track.originalName }}
-              </p>
-
-              <div class="track-meta">
-                <span>💾 {{ formatSize(track.size) }}</span>
-                <span>📅 {{ track.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+              <!-- Informations de la piste -->
+              <div class="track-info">
+                <h3 class="track-title" [title]="track.title">{{ track.title }}</h3>
+                <p class="track-meta">
+                  {{ track.originalName }} · {{ formatSize(track.size) }} · Ajouté le {{ track.createdAt | date:'dd/MM/yyyy HH:mm' }}
+                </p>
               </div>
 
+              <!-- Actions -->
               <div class="track-actions">
+                <!-- Input caché pour modification d'image -->
+                <input
+                  #editInput
+                  type="file"
+                  accept="image/*"
+                  style="display: none"
+                  (change)="onCoverChange($event, track)"
+                />
+
+                @if (getCover(track.id)) {
+                  <button
+                    type="button"
+                    class="btn-cover-action"
+                    (click)="editInput.click()"
+                    title="Changer l'image">
+                    🖼️ Modifier
+                  </button>
+                  <button
+                    type="button"
+                    class="btn-cover-remove"
+                    (click)="removeCover(track)"
+                    title="Retirer l'image personnalisée">
+                    ✕ Retirer image
+                  </button>
+                } @else {
+                  <button
+                    type="button"
+                    class="btn-cover-action"
+                    (click)="editInput.click()"
+                    title="Ajouter une image personnalisée">
+                    🖼️ Ajouter image
+                  </button>
+                }
+
+                <!-- Bouton de lecture -->
                 <button
                   type="button"
-                  class="btn-track-play"
+                  class="btn-play-circle"
+                  [class.btn-is-playing]="currentTrack()?.id === track.id && isPlaying()"
                   (click)="play(track)"
-                  [attr.aria-label]="'Lire ' + track.title">
-                  @if (currentTrack()?.id === track.id) {
-                    Rejouer ↺
+                  [title]="currentTrack()?.id === track.id && isPlaying() ? 'Mettre en pause' : 'Écouter ' + track.title"
+                  [attr.aria-label]="currentTrack()?.id === track.id && isPlaying() ? 'Mettre en pause' : 'Écouter ' + track.title">
+                  @if (currentTrack()?.id === track.id && isPlaying()) {
+                    ⏸
                   } @else {
-                    ▶ Écouter
+                    ▶
+                  }
+                </button>
+
+                <!-- Bouton de suppression -->
+                <button
+                  type="button"
+                  class="btn-delete-item"
+                  (click)="deleteTrack(track)"
+                  [disabled]="deletingId() === track.id"
+                  [title]="'Supprimer ' + track.title"
+                  [attr.aria-label]="'Supprimer ' + track.title">
+                  @if (deletingId() === track.id) {
+                    …
+                  } @else {
+                    🗑️
                   }
                 </button>
               </div>
-            </article>
+            </div>
           } @empty {
             <div class="empty-state">
-              <p>🎵 Aucune piste dans votre bibliothèque.</p>
-              <p><small>Importez votre premier morceau via le formulaire ci-dessus.</small></p>
+              <p>🎵 Aucune piste trouvée.</p>
+              <p><small>Modifiez vos critères de recherche ou importez un nouveau morceau.</small></p>
             </div>
           }
         </div>
       }
 
-      <!-- Pagination -->
-      <div class="pager">
-        <button type="button" (click)="go(page() - 1)" [disabled]="page() <= 1 || loading()">← Précédent</button>
-        <span class="page-info">Page {{ page() }} / {{ pages() }}</span>
-        <button type="button" (click)="go(page() + 1)" [disabled]="page() >= pages() || loading()">Suivant →</button>
+      <!-- Barre de pagination Material -->
+      <div class="paginator-bar">
+        <div class="paginator-page-size">
+          <label for="limitSelect">Items per page:</label>
+          <select id="limitSelect" [value]="limit()" (change)="onLimitChange(+$any($event.target).value)">
+            <option [value]="4">4</option>
+            <option [value]="5">5</option>
+            <option [value]="10">10</option>
+            <option [value]="20">20</option>
+          </select>
+        </div>
+
+        <div class="paginator-range">
+          {{ startIndex() }} – {{ endIndex() }} of {{ total() }}
+        </div>
+
+        <div class="paginator-nav">
+          <button
+            type="button"
+            class="btn-paginator-nav"
+            (click)="go(page() - 1)"
+            [disabled]="page() <= 1 || loading()"
+            aria-label="Page précédente">
+            ‹
+          </button>
+          <button
+            type="button"
+            class="btn-paginator-nav"
+            (click)="go(page() + 1)"
+            [disabled]="page() >= pages() || loading()"
+            aria-label="Page suivante">
+            ›
+          </button>
+        </div>
       </div>
 
       <!-- Erreur de lecture audio -->
@@ -108,13 +268,36 @@
       @if (audioUrl() && currentTrack(); as track) {
         <div class="audio-player">
           <div class="current-track-info">
-            <span class="now-playing-label">▶ Lecture en cours :</span>
+            <span class="now-playing-label">
+              @if (isPlaying()) {
+                🔊 Lecture en cours :
+              } @else {
+                ⏸ En pause :
+              }
+            </span>
             <b>{{ track.title }}</b>
             <span class="track-format-badge">{{ track.mimeType }}</span>
           </div>
-          <audio [src]="audioUrl()" controls autoplay></audio>
+
+          @if (autoplayBlocked()) {
+            <div class="autoplay-notice">
+              ⚠️ La lecture automatique a été bloquée par votre navigateur. Cliquez sur le bouton <b>▶ Play</b> du lecteur ci-dessous pour lancer le son.
+            </div>
+          }
+
+          <audio
+            #audioPlayer
+            [src]="audioUrl()"
+            controls
+            autoplay
+            (play)="isPlaying.set(true); autoplayBlocked.set(false)"
+            (pause)="isPlaying.set(false)"
+            (ended)="isPlaying.set(false)"
+            (canplay)="onAudioCanPlay(audioPlayer)">
+          </audio>
         </div>
       }
     </article>
   </div>
 </section>
+
