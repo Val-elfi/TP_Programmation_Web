@@ -36,48 +36,135 @@
   font-size: 1.2rem;
 }
 
-/* --- Informations de la piste --- */
-.track-info {
-  flex: 1;
-  min-width: 0;
+/* --- Grille responsive des pistes (2x2 propre) --- */
+.tracks-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  margin: 1rem 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.track-info b {
-  display: block;
+@media (min-width: 580px) {
+  .tracks-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* --- Carte individuelle de morceau --- */
+.track-card {
+  min-width: 0; /* Crucial pour empêcher le débordement en CSS Grid */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1rem;
+  background: #ffffff;
+  border: 1px solid #e1ebe7;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  box-sizing: border-box;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.track-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(29, 117, 94, 0.1);
+  border-color: #b8cbc5;
+}
+
+/* Mise en évidence du morceau en cours de lecture */
+.track-card.is-playing {
+  border-color: #1d755e;
+  background: #f4faf7;
+  box-shadow: 0 0 0 2px rgba(29, 117, 94, 0.25);
+}
+
+.track-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.track-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  background: #eef5f2;
+  color: #276c57;
+  border-radius: 4px;
+}
+
+.playing-indicator {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #1d755e;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.track-title {
+  margin: 0.25rem 0 0.5rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1a202c;
+  line-height: 1.3;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.track-info small {
-  display: block;
+.track-original-name {
+  margin: 0 0 0.75rem;
+  font-size: 0.8rem;
   color: #61756f;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* --- Bouton de lecture --- */
-.btn-play {
-  flex-shrink: 0;
-  width: 40px;
-  height: 40px;
-  padding: 0;
+.track-meta {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  font-size: 1rem;
-  background: #1d755e;
-  color: white;
-  border: 0;
-  cursor: pointer;
-  transition: background 0.2s ease, transform 0.15s ease;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  color: #718096;
+  padding-top: 0.5rem;
+  border-top: 1px dashed #e2e8f0;
+  margin-bottom: 0.75rem;
 }
 
-.btn-play:hover {
+.track-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-track-play {
+  width: 100%;
+  padding: 0.5rem 0.8rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 6px;
+  background: #1d755e;
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.btn-track-play:hover {
+  background: #165b49;
+}
+
+.track-card.is-playing .btn-track-play {
   background: #276c57;
-  transform: scale(1.1);
 }
 
 /* --- Pager --- */
@@ -102,8 +189,41 @@
 /* --- Lecteur audio --- */
 .audio-player {
   margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid #e1ebe7;
+  padding: 1rem;
+  background: #f7faf9;
+  border-radius: 8px;
+  border: 1px solid #e1ebe7;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.current-track-info {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.now-playing-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #1d755e;
+}
+
+.track-format-badge {
+  font-size: 0.75rem;
+  padding: 0.15rem 0.45rem;
+  background: #e1ebe7;
+  color: #276c57;
+  border-radius: 4px;
+}
+
+.audio-player audio {
+  width: 100%;
+  display: block;
 }
 
 /* --- Alertes --- */

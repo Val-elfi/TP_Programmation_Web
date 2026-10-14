@@ -11,6 +11,9 @@
       <h2>Importer</h2>
       <label>Titre<input [formControl]="title" placeholder="Titre de la piste" /></label>
       <label>Fichier audio<input type="file" accept="audio/*" (change)="choose($event)" /></label>
+      @if (uploadError()) {
+        <p class="alert-error">{{ uploadError() }}</p>
+      }
       <button type="button" (click)="upload()" [disabled]="!file || uploading()">
         @if (uploading()) {
           Envoi en cours…
@@ -20,9 +23,6 @@
       </button>
       @if (uploadSuccess()) {
         <p class="alert-success">{{ uploadSuccess() }}</p>
-      }
-      @if (uploadError()) {
-        <p class="alert-error">{{ uploadError() }}</p>
       }
     </article>
 
@@ -46,22 +46,50 @@
         </div>
       }
 
-      <!-- Liste des pistes avec @for et @empty -->
+      <!-- Liste des pistes sous forme de cartes responsives -->
       @if (!loading()) {
-        @for (track of tracks(); track track.id) {
-          <div class="track">
-            <div class="track-info">
-              <b>{{ track.title }}</b>
-              <small>{{ track.originalName }} · {{ formatSize(track.size) }} Ko</small>
+        <div class="tracks-grid">
+          @for (track of tracks(); track track.id) {
+            <article class="track-card" [class.is-playing]="currentTrack()?.id === track.id">
+              <div class="track-header">
+                <span class="track-badge">{{ track.mimeType }}</span>
+                @if (currentTrack()?.id === track.id) {
+                  <span class="playing-indicator">En écoute 🔊</span>
+                }
+              </div>
+
+              <h3 class="track-title" [title]="track.title">{{ track.title }}</h3>
+
+              <p class="track-original-name" [title]="track.originalName">
+                📄 {{ track.originalName }}
+              </p>
+
+              <div class="track-meta">
+                <span>💾 {{ formatSize(track.size) }}</span>
+                <span>📅 {{ track.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+              </div>
+
+              <div class="track-actions">
+                <button
+                  type="button"
+                  class="btn-track-play"
+                  (click)="play(track)"
+                  [attr.aria-label]="'Lire ' + track.title">
+                  @if (currentTrack()?.id === track.id) {
+                    Rejouer ↺
+                  } @else {
+                    ▶ Écouter
+                  }
+                </button>
+              </div>
+            </article>
+          } @empty {
+            <div class="empty-state">
+              <p>🎵 Aucune piste dans votre bibliothèque.</p>
+              <p><small>Importez votre premier morceau via le formulaire ci-dessus.</small></p>
             </div>
-            <button type="button" class="btn-play" (click)="play(track)" [attr.aria-label]="'Lire ' + track.title">▶</button>
-          </div>
-        } @empty {
-          <div class="empty-state">
-            <p>🎵 Aucune piste dans votre bibliothèque.</p>
-            <p><small>Importez votre premier morceau via le formulaire ci-dessus.</small></p>
-          </div>
-        }
+          }
+        </div>
       }
 
       <!-- Pagination -->
@@ -71,9 +99,19 @@
         <button type="button" (click)="go(page() + 1)" [disabled]="page() >= pages() || loading()">Suivant →</button>
       </div>
 
-      <!-- Lecteur audio -->
-      @if (audioUrl()) {
+      <!-- Erreur de lecture audio -->
+      @if (audioError()) {
+        <p class="alert-error">{{ audioError() }}</p>
+      }
+
+      <!-- Lecteur audio et morceau en cours de lecture -->
+      @if (audioUrl() && currentTrack(); as track) {
         <div class="audio-player">
+          <div class="current-track-info">
+            <span class="now-playing-label">▶ Lecture en cours :</span>
+            <b>{{ track.title }}</b>
+            <span class="track-format-badge">{{ track.mimeType }}</span>
+          </div>
           <audio [src]="audioUrl()" controls autoplay></audio>
         </div>
       }
