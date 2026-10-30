@@ -41,9 +41,8 @@
 - **Preuve de fonctionnement** :  
   - Formulaires fonctionnels avec extraction typée des données via `this.form.getRawValue()`. Bouton de soumission désactivé pendant le chargement (`[disabled]="loading()"`).
 
-  ![alt text](image.png)
-  ![alt text](image-1.png)
-  ![alt text](image-2.png)
+  ![alt text](/ressources/image-1.png)
+  ![alt text](/ressources/image-2.png)
 
 ---
 
@@ -83,7 +82,7 @@
 - **Preuve de fonctionnement** :  
   - Messages d'erreur explicites sous les champs lors de saisies invalides ; coloration rouge immédiate ; messages d'erreur HTTP traduits et affichés dans les bannières d'alerte.
 
-  ![alt text](image-3.png)
+  ![alt text](/ressources/image-3.png)
 
 ---
 
@@ -121,7 +120,7 @@
 - **Preuve de fonctionnement** :  
   - Requêtes observables dans l'onglet Network (statuts 200 et 201) ; mise à jour instantanée du composant et redirection vers les routes protégées.
 
-  ![alt text](image-4.png)
+  ![alt text](/ressources/image-4.png)
 
 ---
 
@@ -160,8 +159,6 @@
 
 - **Preuve de fonctionnement** :  
   - Token visible et persistant dans l'onglet **Application > Local Storage** ; console DevTools exempte de tout log de token.
-
-    ![alt text](image-5.png)
 
 ---
 
@@ -207,8 +204,6 @@
   - Synchronisation bidirectionnelle immédiate entre la page profil et l'en-tête lors d'une mise à jour du nom.
   - Disparition instantanée de toutes les informations utilisateur lors d'un clic sur « Déconnexion ».
 
-  ![alt text](image-6.png)
-
 ---
 
 ### 6. Redirection après une connexion ou une inscription réussie
@@ -246,8 +241,8 @@
   - Redirection automatique et instantanée vers `/tracks` après connexion et inscription.
   - L'URL dans la barre d'adresse devient bien `http://localhost:4200/tracks` avec affichage de la liste des morceaux et du formulaire d'envoi.
 
-  ![alt text](image-7.png)
-  ![alt text](image-8.png)
+  ![alt text](/ressources/image-7.png)
+  ![alt text](/ressources/image-8.png)
 
 ---
 
@@ -288,8 +283,8 @@
   - Réinitialisation instantanée de l'en-tête et redirection immédiate vers `/login`.
   - Blocage effectif de l'accès aux pages protégées après déconnexion.
 
-  ![alt text](image-9.png)
-  ![alt text](image-10.png)
+  ![alt text](/ressources/image-9.png)
+  ![alt text](/ressources/image-10.png)
 
 ---
 
@@ -335,7 +330,7 @@
   - Requête `GET /api/users/me` réussie avec statut 200 visible dans l'onglet Réseau des DevTools.
   - Données du profil pré-remplies et synchronisées en temps réel avec MongoDB.
 
-  ![alt text](image-11.png)
+  ![alt text](/ressources/image-11.png)
 
 ---
 
@@ -391,7 +386,6 @@
   - Message de succès vert « Nom modifié avec succès. » affiché sous le champ.
   - Mise à jour immédiate et simultanée du badge avatar, du titre du profil et du header.
 
-  ![alt text](image-12.png)
 
 ---
 
@@ -443,11 +437,8 @@
   - Erreur 401 visible dans l'onglet Réseau des DevTools.
   - Redirection automatique et immédiate de l'URL vers `/login?sessionExpired=true`.
   - Purge intégrale du `localStorage` et affichage clair de l'alerte invitant à se reconnecter.
-
-![alt text](image-13.png)
 Je change manuellement le gpc_token
-![alt text](image-14.png)
-![alt text](image-15.png)
+![alt text](/ressources/image-15.png)
 
 ---
 
@@ -505,7 +496,7 @@ Je change manuellement le gpc_token
   - Mise à jour réactive sans rechargement de page.
   - Désactivation fluide des boutons aux bornes et affichage propre de l'état de chargement et des erreurs.
 
-![alt text](image-16.png)
+![alt text](/ressources/image-16.png)
 
 ---
 
@@ -541,7 +532,7 @@ Je change manuellement le gpc_token
   - Désactivation automatique et visuelle des boutons « Précédent » et « Suivant » aux bornes `1` et `pages()`.
   - Affichage en temps réel du compteur `Page {{ page() }} / {{ pages() }}` dans le template.
   - Requêtes HTTP envoyées avec le paramètre `?page=X` correspondant à la page active.
-  ![alt text](image-17.png)
+  ![alt text](/ressources/image-17.png)
 
 ---
 
@@ -576,7 +567,7 @@ Je change manuellement le gpc_token
 - **Preuve de fonctionnement** :  
   - Réactivité instantanée de l'affichage `Page {{ page() }} / {{ pages() }}` dès la réception du payload JSON `{ items: [...], total: X, pages: Y }`.
   - Boutons de pagination correctement désactivés aux deux bornes (`page() <= 1` et `page() >= pages()`).
-  ![alt text](image-18.png)
+  ![alt text](/ressources/image-18.png)
 
 ---
 
@@ -614,7 +605,7 @@ Je change manuellement le gpc_token
 - **Preuve de fonctionnement** :  
   - Message « Chargement des pistes en cours… » affiché dynamiquement via `@if (loading())`.
   - Boutons désactivés de manière réactive pendant la durée exacte de la requête HTTP.
-  ![alt text](image-19.png)
+  ![alt text](/ressources/image-19.png)
 
 ---
 
@@ -655,7 +646,7 @@ Je change manuellement le gpc_token
 - **Preuve de fonctionnement** :  
   - Bannière rouge `.alert-error` affichée dynamiquement dès la réception d'une erreur HTTP.
   - Disparition automatique de la bannière dès qu'une nouvelle requête est lancée avec succès.
-  ![alt text](image-20.png)
+  ![alt text](/ressources/image-20.png)
 
 ---
 
@@ -694,7 +685,7 @@ Je change manuellement le gpc_token
 - **Preuve de fonctionnement** :  
   - Composant `mat-paginator` actif et stylisé sur `http://localhost:4200/tracks`.
   - Changement dynamique de page et de taille de page (5, 10, 20) répercuté sur l'API et la liste des pistes.
-  ![alt text](image-21.png)
+  ![alt text](/ressources/image-21.png)
 
 ---
 
@@ -759,8 +750,7 @@ Je change manuellement le gpc_token
   - Comment configurer `HttpClient.post` avec `{ reportProgress: true, observe: 'events' }` pour recevoir un flux continu de `HttpEvent`.
   - Comment différencier `HttpEventType.UploadProgress` (octets chargés vs octets totaux) et `HttpEventType.Response` (réception de l'entité créée par le serveur).
   - Comment relier la progression à un Signal Angular et l'injecter dynamiquement dans le style CSS d'une barre de chargement via `[style.width.%]="uploadProgress()"`.
-  ![alt text](image-37.png)
-![alt text](image-22.png)
+
 
 ---
 
@@ -816,8 +806,7 @@ Je change manuellement le gpc_token
   - Comment gérer la confirmation utilisateur avant l'émission d'une action destructrice.
   - Comment gérer le cas limite de pagination (page qui devient vide) pour garantir la cohérence de l'interface utilisateur.
   - Pourquoi et comment révoquer l'`ObjectURL` et réinitialiser l'état du lecteur audio lors de la suppression de la piste active.
-  ![alt text](image-23.png)
-  ![alt text](image-24.png)
+ 
 
 ---
 
@@ -856,7 +845,7 @@ Je change manuellement le gpc_token
 - **Ce que chaque membre sait maintenant expliquer sans l'agent** :  
   - Comment créer et utiliser un Pipe Angular standalone avec le décorateur `@Pipe` et la méthode `transform()`.
   - Pourquoi privilégier un Pipe pur à une méthode de composant appelée dans le template HTML (mémoïsation et optimisation de la détection de changements).
-![alt text](image-25.png)
+
 
 ---
 
@@ -902,8 +891,7 @@ Je change manuellement le gpc_token
 - **Ce que chaque membre sait maintenant expliquer sans l'agent** :  
   - Comment utiliser la primitive `computed()` pour créer un état dérivé réactif en lecture seule synchronisé avec plusieurs Signals.
   - Pourquoi le calcul dérivé via `computed()` optimise les performances (mémoïsation et recalcul uniquement si l'un des signaux dépendants émet une nouvelle valeur).
-  ![alt text](image-26.png)
-  ![alt text](image-27.png)
+
 
 ---
 
@@ -965,8 +953,7 @@ Je change manuellement le gpc_token
   - Comment configurer Multer avec `upload.fields()` pour gérer simultanément plusieurs fichiers hétérogènes (`audio` et `cover`) avec validation distincte de leurs types MIME.
   - Pourquoi les balises HTML `<img>` natives ne peuvent pas transmettre les en-têtes HTTP personnalisés (`Authorization: Bearer`), et comment autoriser le jeton JWT par query parameter (`?token=`) ou via un `Blob` Angular.
   - Comment garantir le nettoyage rigoureux des fichiers physiques orphelins (audio et image) lors de la suppression d'une ressource ou lors d'une erreur d'insertion en base de données.
-  ![alt text](image-28.png)
-  ![alt text](image-29.png)
+  ![alt text](/ressources/image-29.png)
 
 ### 13. Ajout, modification et suppression réactives de l'image de couverture d'un morceau déjà importé avec actualisation instantanée
 
@@ -1019,17 +1006,17 @@ Je change manuellement le gpc_token
 
 ### 14. Checkpoint 
 - que chaque changement de page modifie le paramètre `page` ;
-  ![alt text](image-32.png)
+  ![alt text](/ressources/image-32.png)
 - que l’upload est bien multipart et contient `audio` et `title` ;
-  ![alt text](image-34.png)
+  ![alt text](/ressources/image-34.png)
 - que la réponse de lecture est un flux audio ;
-  ![alt text](image-35.png)
+  ![alt text](/ressources/image-35.png)
 - qu’une erreur `400` est affichée pour un fichier invalide ;
-  ![alt text](image-36.png)
+  ![alt text](/ressources/image-36.png)
 - qu’une piste ne peut être lue que par son propriétaire.
-![alt text](image-38.png)
-![alt text](image-39.png)
-![alt text](image-40.png)
+![alt text](/ressources/image-38.png)
+![alt text](/ressources/image-39.png)
+![alt text](/ressources/image-40.png)
 
 ---
 
@@ -1083,14 +1070,14 @@ Je change manuellement le gpc_token
   - Traitement complet des cas nominaux et d'erreur 404 validé.
 
 - **Preuve 1**
-  ![alt text](image-41.png)
-  ![alt text](image-42.png)
+  ![alt text](/ressources/image-41.png)
+  ![alt text](/ressources/image-42.png)
 - **Preuve 2**
-  ![alt text](image-43.png)
+  ![alt text](/ressources/image-43.png)
   J'ai supprimé la chanson AVICII - The nights du premier onglet mais la piste reste visible sur l'autre onglet
-  ![alt text](image-44.png)
+  ![alt text](/ressources/image-44.png)
   J'essaie donc de la supprimer sur le deuxième onglet et ça m'affiche un message d'erreur
-  ![alt text](image-45.png)
+  ![alt text](/ressources/image-45.png)
 
 **Pourquoi le guard Angular et l’interface ne suffisent pas à sécuriser la suppression**
 - L'interface et les guards s'exécutent dans le navigateur et peuvent être facilement contournés par n'importe qui.
@@ -1146,7 +1133,7 @@ Seul le backend est inviolable : c'est lui qui contrôle cryptographiquement le 
 
 - **Preuve de fonctionnement** :  
   - Déroulement visuel complet des 4 états d'upload avec progression chiffrée et verrouillage strict des contrôles.
-  ![alt text](image-46.png)
+  ![alt text](/ressources/image-46.png)
 
 **Pourquoi un upload avec progression ne se traite pas exactement comme une requête HTTP qui émet uniquement une réponse finale?**
 - Une requête classique n'émet qu'une seule réponse à la fin du téléchargement. A l'inverse, un upload avec progression émet un flux de plusieurs évènement intermédiaires (HttpClient) tout au long de l'envoi. Le code doit donc analyser le type de chaque évènement pour mettre à jour la jauge de pourcentage au fur et à mesure, avant de traiter la confirmation finale.
